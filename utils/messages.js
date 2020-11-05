@@ -1,4 +1,10 @@
 const messages = {
+  auth: {
+    authIsSuccess: 'Авторизация прошла успешно',
+    notAuthorised: 'Необходима авторизация',
+    wrongEmailOrPassword: 'Неправильная почта или пароль',
+    logout: 'Вы успешно вышли из учетной записи',
+  },
   article: {
     isNotValid: 'Ошибка валидации данных статьи',
     isDeleted: 'Статья удалена',

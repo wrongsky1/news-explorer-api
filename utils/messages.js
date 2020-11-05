@@ -11,7 +11,23 @@ const messages = {
     idIsNotFound: 'Нет статьи с таким id',
     idIsNotValid: 'Данный id статьи невалиден',
     isCreated: 'Статья успешно добавлена',
-  }
-}
+  },
+  user: {
+    passwordIsNotValid: 'Длинна пароля менее 8 символов, либо пароль не валиден',
+    idIsNotFound: 'Нет пользователя с таким id',
+    passwordTooShort: 'Длинна пароля должна быть не менее 8 символов',
+    emailAlreadyRegistered: 'Пользователь с таким email уже зарегистрирован',
+  },
+  validation: {
+    urlIsNotValid: 'Невалидный URL',
+    notFound: 'Запрашиваемый ресурс не найден',
+  },
+  schemas: {
+    isEmpty: 'Поле не может быть пустым',
+    wrongUrl: 'Неправильный формат ссылки',
+    emailIsNotValid: 'Невалидный email',
+    isRequired: 'Поле обязательно для заполнения',
+  },
+};
 
 module.exports = { messages };

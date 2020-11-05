@@ -1,57 +1,61 @@
 const bcrypt = require('bcryptjs');
-const { createToken, messages } = require('../utils');
+const jwt = require('jsonwebtoken');
+const { messages } = require('../utils/messages');
 const User = require('../models/user');
-const { BadRequestError, NotFoundError } = require('../errors');
+const { JWT_SECRET } = require('../utils/config');
+const { NotFoundError } = require('../errors/not-found-error');
+const { ConflictError } = require('../errors/conflict-error');
 
-module.exports.getUserInfo = async (req, res, next) => {
-  try {
-    const user = await User.findById(req.user._id)
-    .orFail(
-      () => new NotFoundError(messages.user.idIsNotFound),
-    );
-    res
-      .status(200)
-      .send({ status: '200', data: { name: user.name, email: user.email } });
-  } catch (err) {
-    next(err);
-  }
+module.exports.getUserInfo = (req, res, next) => {
+  User.findById(req.user._id)
+    .orFail()
+    .catch(() => {
+      throw new NotFoundError(messages.user.idIsNotFound);
+    })
+    .then((user) => res.send({ data: { name: user.name, email: user.email } }))
+    .catch(next);
 };
 
-module.exports.createUser = async (req, res, next) => {
-  try {
-    const { name, email, password } = req.body;
+module.exports.createUser = (req, res, next) => {
+  const { email, password, name } = req.body;
 
-    const hash = await bcrypt.hash(password, 10);
-    const user = await User.create({
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
       name,
       email,
       password: hash,
-    });
-
-    res.status(201).send({
-      status: '201',
+    }))
+    .catch((err) => {
+      if (err.name === 'MongoError' || err.code === 11000) {
+        throw new ConflictError(messages.user.emailAlreadyRegistered);
+      } else next(err);
+    })
+    .then((user) => res.status(201).send({
       data: {
-        name: user.name,
-        email: user.email,
+        email: user.email, name: user.name,
       },
-    });
-  } catch (err) {
-    next(new BadRequestError(err.message));
-  }
+    }))
+    .catch(next);
 };
 
-module.exports.login = async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
-    const user = await User.findUserByCredentials(email, password);
-    const token = await createToken(user);
-
-    await res
-      .status(200)
-      .send({ status: '200', message: messages.auth.authIsSuccess, token });
-  } catch (err) {
-    next(err);
-  }
+module.exports.login = (req, res, next) => {
+  const { email, password } = req.body;
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign(
+        { _id: user._id },
+        JWT_SECRET,
+        { expiresIn: '7d' },
+      );
+      res
+        .cookie('jwt', token, {
+          maxAge: 3600000 * 24 * 7,
+          httpOnly: true,
+          sameSite: true,
+        })
+        .send(messages.auth.authIsSuccess);
+    })
+    .catch(next);
 };
 
 module.exports.logout = async (req, res, next) => {

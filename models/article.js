@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
+const { messages } = require('../utils/messages');
 
 const articleSchema = new mongoose.Schema({
   keyword: {
@@ -29,7 +30,7 @@ const articleSchema = new mongoose.Schema({
       validator(link) {
         return validator.isURL(link);
       },
-      message: 'Введён некорректный URL',
+      message: messages.schemas.wrongUrl,
     },
   },
   image: {
@@ -39,7 +40,7 @@ const articleSchema = new mongoose.Schema({
       validator(image) {
         return validator.isURL(image);
       },
-      message: 'Введён некорректный URL',
+      message: messages.schemas.wrongUrl,
     },
   },
   owner: {

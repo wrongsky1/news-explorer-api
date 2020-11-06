@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const UnauthorizedError = require('../errors/unauthorized-error');
+const { messages } = require('../utils/messages');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -13,7 +14,7 @@ const userSchema = new mongoose.Schema({
       validator(name) {
         return !validator.isEmpty(name, { ignore_whitespace: true });
       },
-      message: 'Введенo некорректное Имя',
+      message: messages.schemas.isEmpty,
     },
   },
   email: {
@@ -24,27 +25,27 @@ const userSchema = new mongoose.Schema({
       validator(email) {
         return validator.isEmail(email);
       },
-      message: 'Введён некорректный email',
+      message: messages.schemas.emailIsNotValid,
     },
   },
   password: {
     type: String,
-    required: true,
+    required: [true, messages.user.passwordTooShort],
     minlength: 8,
     select: false,
-  }
-})
+  },
+});
 
 userSchema.statics.findUserByCredentials = function (email, password) {
   return this.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        throw new UnauthorizedError({ message: 'Неправильные email или пароль' });
+        throw new UnauthorizedError(messages.auth.wrongEmailOrPassword);
       }
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            throw new UnauthorizedError({ message: 'Неправильные email или пароль' });
+            throw new UnauthorizedError(messages.auth.wrongEmailOrPassword);
           }
           return user;
         });

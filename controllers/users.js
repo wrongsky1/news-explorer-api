@@ -3,8 +3,8 @@ const jwt = require('jsonwebtoken');
 const { messages } = require('../utils/messages');
 const User = require('../models/user');
 const { JWT_SECRET } = require('../utils/config');
-const { NotFoundError } = require('../errors/not-found-error');
-const { ConflictError } = require('../errors/conflict-error');
+const NotFoundError = require('../errors/not-found-error');
+const ConflictError = require('../errors/conflict-error');
 
 module.exports.getUserInfo = (req, res, next) => {
   User.findById(req.user._id)

@@ -55,7 +55,7 @@ module.exports.createArticle = async (req, res, next) => {
 
 module.exports.deleteArticle = async (req, res, next) => {
   try {
-    const article = await Article.findById(req.params.articleId)
+    const article = await Article.findById(req.params._id)
       .orFail(() => new NotFoundError(messages.article.idIsNotFound))
       .select('+owner');
 
